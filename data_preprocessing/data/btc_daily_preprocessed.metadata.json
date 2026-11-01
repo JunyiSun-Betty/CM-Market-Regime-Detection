@@ -1,0 +1,116 @@
+{
+  "dataset": "btc_daily_preprocessed.csv",
+  "description": "Daily Bitcoin market data from CryptoMatter, aligned to a complete calendar and prepared for later regime-model feature engineering.",
+  "source": {
+    "provider": "CryptoMatter",
+    "endpoint": "https://backend.crypto-matter.com/api/coins/marketdata",
+    "coin_parameter": "bitcoin",
+    "requested_columns": ["Close", "Market_cap", "Trade_volume"],
+    "date_field": "CreationDate"
+  },
+  "grain": "One row per calendar date, from the earliest to the latest date returned by any requested series.",
+  "date_convention": "The API provides a calendar date without a time or timezone in this endpoint; the exact daily cutoff has not been verified.",
+  "unit_convention": "Price, market capitalization, and trade-volume units are preserved from the API. Their quote currency and volume denomination have not been verified.",
+  "missing_value_policy": "An empty CSV field means unavailable. Missing dates and values are not forward-filled or backward-filled. A genuine numeric zero remains zero unless the field is a closing price, for which nonpositive values are invalid.",
+  "columns": [
+    {
+      "name": "date",
+      "type": "date (YYYY-MM-DD)",
+      "description": "Calendar date for this row, derived from the API CreationDate field or inserted to complete the calendar.",
+      "missing": "Never blank."
+    },
+    {
+      "name": "close_raw",
+      "type": "number or blank",
+      "description": "Unchanged BTC Close value returned by the API; zero values are retained for auditing.",
+      "unit": "API price unit; quote currency unverified",
+      "missing": "Blank when the API has no Close observation for the date."
+    },
+    {
+      "name": "close",
+      "type": "positive number or blank",
+      "description": "Cleaned closing price used for returns and rolling features. Equals close_raw only when close_raw is positive.",
+      "unit": "Same as close_raw",
+      "missing": "Blank when close_raw is missing, zero, or negative."
+    },
+    {
+      "name": "market_cap",
+      "type": "nonnegative number or blank",
+      "description": "BTC Market_cap value returned by the API, without transformation.",
+      "unit": "API market-cap unit; currency unverified",
+      "missing": "Blank when the API has no Market_cap observation."
+    },
+    {
+      "name": "trade_volume",
+      "type": "nonnegative number or blank",
+      "description": "BTC Trade_volume value returned by the API, without transformation. An observed zero is kept as zero.",
+      "unit": "API volume unit; base/quote denomination unverified",
+      "missing": "Blank when the API has no Trade_volume observation."
+    },
+    {
+      "name": "has_close",
+      "type": "integer flag (0 or 1)",
+      "description": "1 when close is valid and positive; 0 otherwise.",
+      "missing": "Never blank."
+    },
+    {
+      "name": "invalid_close",
+      "type": "integer flag (0 or 1)",
+      "description": "1 when the API supplied a nonpositive close_raw value; 0 when it supplied a positive value or no value.",
+      "missing": "Never blank."
+    },
+    {
+      "name": "has_market_cap",
+      "type": "integer flag (0 or 1)",
+      "description": "1 when market_cap is present, including an observed zero; 0 when missing.",
+      "missing": "Never blank."
+    },
+    {
+      "name": "has_trade_volume",
+      "type": "integer flag (0 or 1)",
+      "description": "1 when trade_volume is present, including an observed zero; 0 when missing.",
+      "missing": "Never blank."
+    },
+    {
+      "name": "zero_trade_volume",
+      "type": "integer flag (0 or 1)",
+      "description": "1 when the API supplied trade_volume exactly equal to zero; 0 otherwise. This is a quality flag, not a correction.",
+      "missing": "Never blank."
+    },
+    {
+      "name": "price_change",
+      "type": "number or blank",
+      "description": "close[t] - close[t-1 calendar day]. This is the absolute daily price difference used by the 2021 common-regime paper.",
+      "unit": "Same as close",
+      "missing": "Blank unless both consecutive calendar days have valid closes."
+    },
+    {
+      "name": "simple_return",
+      "type": "number or blank",
+      "description": "close[t] / close[t-1 calendar day] - 1.",
+      "unit": "Fraction; multiply by 100 for percent",
+      "missing": "Blank unless both consecutive calendar days have valid closes."
+    },
+    {
+      "name": "log_return",
+      "type": "number or blank",
+      "description": "Natural logarithm of close[t] / close[t-1 calendar day].",
+      "unit": "Log-return fraction",
+      "missing": "Blank unless both consecutive calendar days have valid closes."
+    },
+    {
+      "name": "volatility_30d_annualized",
+      "type": "nonnegative number or blank",
+      "description": "Sample standard deviation (ddof=1) of the latest 30 consecutive daily log returns, multiplied by sqrt(365) for a 365-day crypto year.",
+      "unit": "Annualized return fraction",
+      "missing": "Blank until 30 consecutive valid daily log returns are available."
+    },
+    {
+      "name": "drawdown_from_30d_peak",
+      "type": "number or blank",
+      "description": "close[t] / maximum close over the current and previous 29 calendar days - 1. This measures decline from the trailing peak; it is not the maximum drawdown over the window.",
+      "unit": "Fraction, normally zero or negative",
+      "missing": "Blank unless all 30 calendar days in the window have valid closes."
+    }
+  ]
+}

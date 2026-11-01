@@ -1,0 +1,6 @@
+.venv/
+.env
+__pycache__/
+*.py[cod]
+preprocess_btc.py
+data_preprocessing/test_crypto_matter.py
