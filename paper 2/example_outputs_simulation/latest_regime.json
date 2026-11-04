@@ -1,0 +1,35 @@
+{
+  "asset": "BTC",
+  "date": "2026-10-15",
+  "model": "paper2_covariance_clustering (adapted)",
+  "regime": "Low volatility",
+  "confidence": 0.959,
+  "trend": {
+    "bull": null,
+    "bear": null
+  },
+  "volatility": {
+    "low": 0.959,
+    "high": 0.041
+  },
+  "backtest": {
+    "high_vol": {
+      "time_share": 0.3618,
+      "avg_length_days": 50.2308,
+      "ann_return": 0.156,
+      "ann_volatility": 1.0674,
+      "next_20d_volatility": 0.9702,
+      "avg_drawdown_from_peak": -0.3798,
+      "worst_drawdown_from_peak": -0.8681
+    },
+    "low_vol": {
+      "time_share": 0.6382,
+      "avg_length_days": 82.2857,
+      "ann_return": 0.5162,
+      "ann_volatility": 0.6505,
+      "next_20d_volatility": 0.6279,
+      "avg_drawdown_from_peak": -0.2973,
+      "worst_drawdown_from_peak": -0.6747
+    }
+  }
+}
