@@ -1,0 +1,20 @@
+Window 3 days x 3 features; target = next-day regime
+
+     split  samples  Low  High  Distress  switches first target last target
+     train     2802 1090   930       782        78   2014-05-01  2021-12-31
+validation      730  480   184        66        17   2022-01-01  2023-12-31
+      test     1035  845   190         0        12   2024-01-01  2026-10-31
+
+Scaler (training rows):
+                               mean       std
+log_return                 0.001662  0.039107
+volatility_30d_annualized  0.678131  0.317622
+drawdown_from_30d_peak    -0.101682  0.099170
+
+Eq. 2 weights per training sample (mean by target class and switch status):
+ lambda  Low no-switch  Low switch  High no-switch  High switch  Distress no-switch  Distress switch  share of total weight on switch days
+   0.00          2.571       2.571           3.013        3.013               3.583            3.583                                 0.028
+   0.25          1.928       2.708           2.260        2.773               2.687            3.987                                 0.037
+   0.50          1.285       2.845           1.506        2.533               1.792            4.392                                 0.054
+   0.75          0.643       2.983           0.753        2.293               0.896            4.796                                 0.103
+   1.00          0.000       3.120           0.000        2.053               0.000            5.200                                 1.000

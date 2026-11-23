@@ -1,0 +1,15 @@
+Rows: 4570 days, 2014-04-28 to 2026-10-31
+
+Days per regime and switches by split:
+regime       Low  High  Distress  switches  days
+split                                           
+train       1090   933       782        78  2805
+validation   480   184        66        17   730
+test         845   190         0        12  1035
+
+Regime run lengths (days):
+          count  median  mean  max  one_day_runs
+regime                                          
+Distress     18    34.5  47.1  191             0
+High         53    24.0  24.7  175             2
+Low          37    30.0  65.3  328             2

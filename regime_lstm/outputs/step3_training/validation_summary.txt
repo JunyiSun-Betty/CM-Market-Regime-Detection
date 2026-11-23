@@ -1,0 +1,47 @@
+Validation results (mean and std over 5 seeds, best epoch per run)
+
+        macro_f1_mean  accuracy_mean  switch_recall_mean  false_switch_mean  epoch_mean  macro_f1_std  accuracy_std  switch_recall_std  false_switch_std  epoch_std
+lambda                                                                                                                                                             
+0.00            0.865          0.911               0.388              0.076        63.2         0.004         0.002              0.067             0.003     41.076
+0.25            0.863          0.911               0.435              0.078        62.2         0.003         0.002              0.067             0.003     23.669
+0.50            0.861          0.909               0.400              0.079        69.0         0.005         0.002              0.064             0.003     26.220
+0.75            0.855          0.904               0.412              0.084        78.8         0.008         0.006              0.072             0.005     28.752
+1.00            0.475          0.514               0.565              0.487        27.6         0.181         0.258              0.164             0.264     22.255
+
+Persistence baseline (tomorrow = today): macro_f1 0.966, accuracy 0.977, switch_recall 0.000, false_switch 0.000
+
+Best seed for lambda=0.0: seed 3, epoch 98, macro-F1 0.869
+               pred Low  pred High  pred Distress
+true Low            437         15             28
+true High            11        169              4
+true Distress         1          5             60
+
+Best seed for lambda=0.25: seed 0, epoch 78, macro-F1 0.868
+               pred Low  pred High  pred Distress
+true Low            436         16             28
+true High            10        167              7
+true Distress         0          4             62
+
+Best seed for lambda=0.5: seed 0, epoch 67, macro-F1 0.869
+               pred Low  pred High  pred Distress
+true Low            437         15             28
+true High            10        167              7
+true Distress         0          4             62
+
+Best seed for lambda=0.75: seed 0, epoch 87, macro-F1 0.865
+               pred Low  pred High  pred Distress
+true Low            433         19             28
+true High             8        167              9
+true Distress         0          3             63
+
+Best seed for lambda=1.0: seed 4, epoch 30, macro-F1 0.694
+               pred Low  pred High  pred Distress
+true Low            386         63             31
+true High            38        104             42
+true Distress         0          1             65
+
+Persistence baseline confusion matrix
+               pred Low  pred High  pred Distress
+true Low            474          6              0
+true High             5        176              3
+true Distress         0          3             63
