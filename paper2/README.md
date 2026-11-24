@@ -4,68 +4,76 @@ Part of the Crypto Matter × Frankfurt School project "AI-Driven Market Regime D
 Owner: Mainak. Paper: Bucci & Ciciretti (2022), *Market regime detection via realized
 covariances*, Economic Modelling 111 (preprint: arXiv 2104.03667).
 
+## Latest results (23 Nov 2026, Crypto Matter data up to 22 Nov 2026)
+
+**Full analysis:** [`paper2_analysis.ipynb`](paper2_analysis.ipynb) (all tables, charts, observations and
+conclusion are visible on GitHub without running anything).
+**Output table for the combiner:** [`outputs_notebook/paper2_output_cm.csv`](outputs_notebook/paper2_output_cm.csv)
+(`date, p_bull, p_bear, p_low_vol, p_high_vol`).
+
+![Paper 2 results summary](docs/paper2_results_summary.png)
+
+**In short:** on Crypto Matter data with the corrected dates, Paper 2 picks up market-wide stress
+but separates Bitcoin's next-month volatility only weakly (56% after a HIGH label vs 52% after CALM),
+less than a simple rule based on Bitcoin's own volatility (63% vs 51%). It labels about two thirds
+of days as HIGH, and a crypto-only basket does not help. Recommended use: a market-stress input to
+the combiner, not a standalone Bitcoin regime model.
+
 ## The idea in one paragraph
-In a crisis, assets swing harder **and** start moving together. The paper measures that
-with covariance matrices of a basket of assets, compresses them with PCA, and uses
-hierarchical clustering to split time into two regimes: **calm** and **highly volatile**.
-We do the same on daily data, with Bitcoin inside a small basket, and turn the result
-into the team's standard output: `date, p_bull, p_bear, p_low_vol, p_high_vol`.
+In a crisis, assets swing harder **and** start moving together. The paper measures that with
+covariance matrices of a basket of assets, compresses them with PCA, and uses hierarchical
+clustering to split time into two regimes: **calm** and **highly volatile**. We do the same on
+daily data, with Bitcoin inside a small basket, and turn the result into the team's standard
+output: `date, p_bull, p_bear, p_low_vol, p_high_vol`. This is a daily adaptation of the paper,
+not a replication of its hourly realized covariance (Crypto Matter provides daily data only).
 
 See `docs/architecture_team_pipeline.png` and `docs/architecture_paper2_model.png`.
 
 ## Files
 | File | What it does |
 |---|---|
+| `paper2_analysis.ipynb` | **Main analysis notebook**: Paper 2 on Crypto Matter data (dates fixed) vs the Yahoo version, a crypto-only basket and a simple benchmark, with observations and conclusion |
 | `config.py` | Every setting: basket, window, refit schedule, smoothing, costs |
-| `fetch_data.py` | Step 1: downloads daily prices from Yahoo Finance into `data/` |
-| `simulate_data.py` | Optional: makes fake data with known calm/stress periods (a test) |
+| `fetch_data.py` | Downloads daily prices from Yahoo Finance (BTC, ETH, S&P 500, gold, US 10Y yield, VIX) into `data/` |
+| `cm_data.py` | Downloads Crypto Matter data (Close, Market_cap, Trade_volume) and writes a data-quality check |
+| `check_cm_dates.py` | Compares Crypto Matter's dates with Yahoo, year by year, for each coin |
 | `data_prep.py` | Loads, checks and aligns prices; turns them into daily returns |
 | `features.py` | Rolling 21-day covariance, turned into volatilities + correlations |
 | `model.py` | PCA + Ward clustering, monthly walk-forward, probabilities, smoothing |
 | `backtest.py` | Regime vs. what the price did, transitions, crash-period check, trading test |
-| `plots.py` | The three charts |
-| `run_paper2.py` | Step 2: runs everything and writes all outputs |
-| `experiments.py` | Step 3 (optional): compares model variants with a simple BTC-volatility benchmark |
+| `plots.py` | Charts |
+| `run_paper2.py` | Runs the Yahoo version end to end and writes `outputs/` |
+| `experiments.py` | Optional: model variants vs. a simple BTC-volatility benchmark |
+| `simulate_data.py` | Optional: fake data with known calm/stress periods (a test of the code) |
 
-## How to run (VS Code)
-1. Open this folder in VS Code and open a terminal (Terminal → New Terminal).
-2. Optional but clean: `python -m venv .venv` and activate it
-   (Windows: `.venv\Scripts\activate`, Mac: `source .venv/bin/activate`).
-3. `pip install -r requirements.txt`
-4. `python fetch_data.py`  (needs internet; about 10 seconds)
-5. `python run_paper2.py --compare`  (about 30 seconds)
-6. Open `outputs/report.md` (in VS Code: right-click → Open Preview) and the PNG charts.
-7. Optional: `python experiments.py` writes `outputs/experiments.md` (variants vs. benchmark).
+## How to run
+1. `pip install -r requirements.txt`
+2. `python fetch_data.py` (Yahoo market data, no key needed)
+3. Put the Crypto Matter key in the terminal, never in code: `$env:CM_API_KEY = "your-key"` (PowerShell),
+   then `python cm_data.py --coins bitcoin ethereum litecoin binancecoin monero`
+4. Open `paper2_analysis.ipynb` (Jupyter or VS Code) and **Run All** (about 1 minute; the notebook needs no key).
+   Results are saved in `outputs_notebook/`.
+5. Optional: `python check_cm_dates.py --coins bitcoin ethereum litecoin binancecoin monero` (date check),
+   `python run_paper2.py --compare` (Yahoo version, writes `outputs/`).
 
-Test without internet: `python simulate_data.py` then
-`python run_paper2.py --prices data/sim_prices.csv --truth data/sim_truth.csv --out outputs_sim --compare`.
-`example_outputs_simulation/` already contains the result of this test.
+`data/` is not in Git: the scripts recreate it.
 
-When the Crypto Matter API is ready, save its prices in the same format as
-`data/raw_prices.csv` (a `date` column + one column per asset) and run
-`python run_paper2.py --prices <your file>`.
+## Crypto Matter data notes
+* **Dates:** from 28 Jan 2018 to 22 Nov 2023, Crypto Matter's CreationDate is one day after the
+  closing day (checked against Yahoo for BTC, ETH, LTC, BNB, XMR). The notebook moves those dates back
+  one day (approved by Tobias, 21 Nov 2026). After the fix, CM and Yahoo BTC returns match on the same
+  date in every year (correlation 0.96–1.00).
+* **Zeros:** zero prices (same month-end dates for every coin, e.g. 31 Dec 2014, 29 Feb 2016) are treated as missing.
+* **Gaps:** at most 3 missing days in a row (BNB once 4); gaps of up to 3 days are filled with the last price.
 
-## Outputs (in `outputs/`)
+## Outputs of the notebook (in `outputs_notebook/`)
 | File | Meaning |
 |---|---|
-| `paper2_model_output.csv` | The team data contract. p_bull/p_bear are empty on purpose: this model has no direction |
-| `paper2_details.csv` | Daily probability, raw label, smoothed label, BTC price |
-| `latest_regime.json` | Today's answer in the team's JSON format |
-| `refit_diagnostics.csv` | Quality of each monthly refit (PCA variance explained, silhouette) |
-| `report.md` | All checks and tables in plain English |
-| `chart_regimes.png` | BTC price with the high-volatility periods shaded, plus P(high vol) |
-| `chart_clusters.png` | How the last fit splits past days into the two groups |
-| `chart_strategy.png` | The paper's trading test: trend rule with and without the regime filter |
-
-## How to read the report
-- **Section 5, next_20d_volatility**: the honest test. BTC's volatility over the 20 days
-  *after* a high-vol label should be clearly higher than after a calm label.
-- **Section 7, crash periods**: COVID (Mar 2020), May 2021, Terra/LUNA (2022) and FTX
-  (Nov 2022) should be mostly labelled high volatility.
-- **Section 4, label switches per year**: a few per year is healthy; dozens means noise.
-- **Section 8, trading test**: the paper found that skipping the trend rule in high
-  volatility improved the Sharpe ratio. Check if that holds for BTC.
-- **`--compare`** adds the paper's own feature set (correlation distances only) next to ours.
+| `paper2_output_cm.csv` | Team table, Crypto Matter version (the official Paper 2 output) |
+| `paper2_output_crypto_only.csv` | Team table, crypto-only version (for reference) |
+| `comparison.csv` | All metrics for the four versions |
+| `chart_next_month_volatility.png` | The key test: BTC volatility next month after HIGH vs CALM labels |
+| `chart_regimes_cm.png`, `chart_regimes_crypto_only.png` | BTC price with the high-volatility periods shaded |
 
 ## What we kept and what we changed
 | Paper | Ours | Why |
@@ -79,7 +87,7 @@ When the Crypto Matter API is ready, save its prices in the same format as
 
 ## Known limits
 - No bull/bear: the model only separates calm from highly volatile markets.
-- The rolling window reacts with a delay, so regimes start and end a little late.
-- The first fits have only about 2 years of history, so early labels are less stable.
-- The published paper (clustering best) and the preprint (VLSTAR best) disagree; the
-  VLSTAR model exists only in R (`starvars` package) and is not included here.
+- It captures market-wide stress rather than Bitcoin's own volatility, and labels about two thirds of days as HIGH.
+- Results are sensitive to small data differences (Yahoo vs Crypto Matter), and cluster quality is weak (silhouette about 0.28).
+- The rolling window reacts with a delay, so regimes start and end a little late; the first fits have only about 2 years of history.
+- The published paper (clustering best) and the preprint (VLSTAR best) disagree; VLSTAR exists only in R (`starvars`) and is not included here.
